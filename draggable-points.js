@@ -33,10 +33,13 @@
                 dragX,
                 dragY,
                 dragPlotX,
-                dragPlotY;
+                dragPlotY,
+                restoredZoomHor,
+                restoredZoomVert;
 
             function mouseDown(e) {
-                var hoverPoint = chart.hoverPoint,
+                var hoverPoint = e.target.point, //chart.hoverPoint, does only work points added (live data) before drag
+
                     options,
                     originalEvent = e.originalEvent || e;
 
@@ -57,7 +60,12 @@
 
                     // Disable zooming when dragging
                     if (dragPoint) {
-                        chart.mouseIsDown = false;
+                        chart.mouseIsDown = false; // does not have any effect?
+                        restoredZoomHor = chart.pointer.zoomHor;
+                        restoredZoomVert = chart.pointer.zoomVert;
+                        // disable zooming, works with Highcharts v4.1.3
+                        chart.pointer.zoomHor = false;
+                        chart.pointer.zoomVert = false;
                     }
                 }
             }
@@ -154,6 +162,11 @@
                             });
                         }
                     });
+                }
+
+                if (dragPoint) {
+                    chart.pointer.zoomHor = restoredZoomHor;
+                    chart.pointer.zoomVert = restoredZoomVert;
                 }
                 dragPoint = dragX = dragY = undefined;
             }
