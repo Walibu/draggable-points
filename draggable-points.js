@@ -117,7 +117,8 @@
 
                     // The default handler has not run because of prevented default
                     if (!proceed) {
-                        drop();
+                        // proceed anyway otherwise it makes no sense using this plugin
+                        /*drop();*/
                     }
                 }
             }
@@ -139,22 +140,27 @@
                             newX = dragX === undefined ? dragPoint.x : dragPoint.series.xAxis.translate(newPlotX, true),
                             newY = dragY === undefined ? dragPoint.y : dragPoint.series.yAxis.translate(newPlotY, true);
 
-                        newX = filterRange(newX, series, 'X');
-                        newY = filterRange(newY, series, 'Y');
-
-                        dragPoint.update({
-                            x: draggableX ? newX : dragPoint.x,
-                            y: draggableY ? newY : dragPoint.y
-                        });
+                        newX = draggableX ? filterRange(newX, series, 'X') : dragPoint.x;
+                        newY = draggableY ? filterRange(newY, series, 'Y') : dragPoint.y;
                     }
-                    dragPoint.firePointEvent('drop');
+                    dragPoint.firePointEvent('drop', {
+                        newX: e ? newX : dragPoint.x,
+                        newY: e ? newY : dragPoint.y
+                    }, function (e) {
+                        if (e) {
+                            dragPoint.update({
+                                x: newX,
+                                y: newY
+                            });
+                        }
+                    });
                 }
                 dragPoint = dragX = dragY = undefined;
             }
 
 
             // Kill animation (why was this again?)
-            chart.redraw(); 
+            chart.redraw();
 
             // Add'em
             addEvent(container, 'mousemove', mouseMove);
